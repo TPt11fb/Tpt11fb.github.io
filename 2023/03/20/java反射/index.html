@@ -1,0 +1,378 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>java反射 | Tptfb11&#39;S Blog</title>
+  <meta name="author" content="Tptfb11">
+  
+  <meta name="description" content="java反射赋予java动态特性.">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="java反射"/>
+  <meta property="og:site_name" content="Tptfb11&#39;S Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+    <link rel="alternative" href="/atom.xml" title="Tptfb11&#39;S Blog" type="application/atom+xml">
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">Tptfb11&#39;S Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="归档文章.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="文章分类.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="文章标签.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tools" title="常用工具.">
+			  <i class="fa fa-fighter-jet"></i>Tools
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/notes" title="生活随笔.">
+			  <i class="fa fa-paper-plane"></i>Notes
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="关于我.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> java反射</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> java反射赋予java动态特性.
+		 </div> <!-- alert -->
+	  		
+
+	  <h1 id="什么是反射？"><a href="#什么是反射？" class="headerlink" title="什么是反射？"></a>什么是反射？</h1><p>​		反射我简单的理解为：“<strong>动态注册</strong>”，java支持反射功能。比如：一段代码在你不知道传入的参数值是什么的时候，也就无法知道它有什么用处：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(String className, String methodName)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(className);</span><br><span class="line">    clazz.getMethod(methodName).invoke(clazz.newInstance());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​		这段代码中包含这几个关键的函数：</p>
+<p>​		<strong>获取类的⽅法： forName</strong> </p>
+<p>​		<strong>实例化类对象的⽅法：</strong> <strong>newInstance</strong> </p>
+<p>​		<strong>获取函数的⽅法：</strong> <strong>getMethod</strong> </p>
+<p>​		<strong>执⾏函数的⽅法： invoke</strong></p>
+<p>​		这段代码也就很容易理解：传入类名和方法名，通过Class.forName获取到类，通过getMethod获 	取传入的类的方法，通过invoke调用这个方法，而clazz.newInstance()就是对前边获取到的类进行初始化（也就是new）。</p>
+<h2 id="举一个例子"><a href="#举一个例子" class="headerlink" title="举一个例子"></a>举一个例子</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">demo1</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">exec</span><span class="params">(String classname,String MethodName)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">t</span> <span class="operator">=</span> <span class="string">&quot;123456&quot;</span>;<span class="comment">//实例化一个String对象</span></span><br><span class="line">        <span class="type">Class</span> <span class="variable">c</span> <span class="operator">=</span> Class.forName(classname);<span class="comment">//传入类</span></span><br><span class="line">        System.out.println(c.getMethod(MethodName).invoke(t));<span class="comment">//调用类方法</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        demo1.exec(<span class="string">&quot;java.lang.String&quot;</span>,<span class="string">&quot;length&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"># forName 获取类的⽅法</span><br><span class="line"># getMethod 获取函数的⽅法</span><br><span class="line"># invoke 执⾏函数的⽅法</span><br><span class="line"># newInstance 实例化类对象的⽅法，效果类似于<span class="keyword">new</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/java%E5%8F%8D%E5%B0%84/202303201113259.png" alt="image.png"></p>
+<h1 id="反射有什么用？"><a href="#反射有什么用？" class="headerlink" title="反射有什么用？"></a>反射有什么用？</h1><p>​		通过java语言中的反射机制可以操作字节码文件（可以读和修改字节码文件。）</p>
+<p>​		什么意思呢？大致意思就是我们能够通过反射去修改一个已有类的属性，调用类的任何方法！</p>
+<h2 id="一些反射常用的方法"><a href="#一些反射常用的方法" class="headerlink" title="一些反射常用的方法"></a>一些反射常用的方法</h2><p>​		在实现反射修改任意已有类的属性之前我们需要先学习一下反射技术中常用的一些方法。</p>
+<p>​		1、获取到类，除了前边给出的Class.forName获取类，还有一些常用的方法：</p>
+<ul>
+<li>obj.getClass() 如果上下⽂中存在某个类的实例 obj ，那么我们可以直接通过obj.getClass() 来获取它的类。</li>
+</ul>
+<ul>
+<li>Test.class 如果你已经加载了某个类，只是想获取到它的 java.lang.Class 对象，那么就直接拿它的 class 属性即可。</li>
+</ul>
+<p>​		2、获取一个类的Field属性值，即一个类的成员变量，包括私有、公有、保护。</p>
+<ul>
+<li><code>Class#getField(String name)</code>传入属性名称，获取到类的该属性。</li>
+<li><code>Class#getDeclaredField(String name)</code>同上，不同点是getDeclaredField能获取一个类的所有属性，而getField只可获取公有属性值。</li>
+<li><code>Class#getFields()</code>可想而知是获取到类的全部公有属性值。</li>
+<li><code>Class#getDeclaredFields()</code>这是获取类的全部属性值包括公有、私有、保护。</li>
+</ul>
+<p>​		3、获取一个类的Method方法，即一个类的方法，包括私有、公有、保护。</p>
+<ul>
+<li>获取Method和获取Field类似，前缀getDeclared即是获取公有、私有、保护方法，后缀s即是获取所有方法，不做过多的说明。</li>
+</ul>
+<p>​		4、获取一个类的Constructor构造函数，同样的也和Field类似。</p>
+<p>​		5、获取并修改一个类，这类方法不属于Class类的方法了，而是Field、Method等这些类的方法。</p>
+<ul>
+<li>set，给一个类的某个属性赋值。</li>
+<li>get，获取某个类的属性，</li>
+<li>setAccessible，设置私有属性可访问。</li>
+</ul>
+<p>​		6、还有一些常用的方法，getDeclaredAnnotation获取注解，getName获取类名，getInterfaces获取接口等等。</p>
+<h2 id="实例修改一个已有类"><a href="#实例修改一个已有类" class="headerlink" title="实例修改一个已有类"></a>实例修改一个已有类</h2><p>​		掌握上边的知识以后，就可以尝试对一个已有的类通过反射去修改类的属性，调用类的任何方法！</p>
+<p>​		尝试对Runtime类进行修改：</p>
+<p>​		首先需要了解Runtime类，它的构造方法是private私有的，无法直接new Runtiem()，但是内部存在这样的一个方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> Runtime <span class="title function_">getRuntime</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> currentRuntime;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Runtime</span> <span class="variable">currentRuntime</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Runtime</span>();</span><br></pre></td></tr></table></figure>
+
+<p>​		通过该方法可以获取到一个new Runtime()。这是java中的单例模式。</p>
+<p>​		实践1：调用Runtime的私有构造方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.Constructor;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">test4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Class</span> <span class="variable">runtime</span> <span class="operator">=</span> Runtime.class; <span class="comment">// 获取到类</span></span><br><span class="line">        <span class="type">Constructor</span> <span class="variable">RuntimeDeclaredConstructor</span> <span class="operator">=</span> runtime.getDeclaredConstructor(); <span class="comment">// 获取无参构造函数</span></span><br><span class="line">        RuntimeDeclaredConstructor.setAccessible(<span class="literal">true</span>);<span class="comment">// 设置可访问，因为该构造函数为私有属性</span></span><br><span class="line">        <span class="type">Runtime</span> <span class="variable">r</span> <span class="operator">=</span> (Runtime) RuntimeDeclaredConstructor.newInstance();<span class="comment">// 实例化</span></span><br><span class="line">        r.exec(<span class="string">&quot;calc&quot;</span>);<span class="comment">// 调用方法</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/java%E5%8F%8D%E5%B0%84/202303201437131.png" alt="image-20230320143737940"></p>
+<p>​		实践2：反射修改ProcessBuilder类中的私有属性参数command</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.ArrayList;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">test4</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">ProcessBuilder</span> <span class="variable">p</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ProcessBuilder</span>();</span><br><span class="line">        <span class="type">Class</span> <span class="variable">c</span> <span class="operator">=</span> ProcessBuilder.class;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">cmd</span> <span class="operator">=</span> c.getDeclaredField(<span class="string">&quot;command&quot;</span>);</span><br><span class="line">        cmd.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        ArrayList&lt;String&gt; cmdList = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(<span class="number">1</span>);</span><br><span class="line">        cmdList.add(<span class="string">&quot;calc&quot;</span>);</span><br><span class="line">        cmd.set(p,cmdList);</span><br><span class="line">        p.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​		这个例子可能没什么实质性用处，我们只需要知道我们能够通过反射来修改一个类的已有属性值即可。</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/java%E5%8F%8D%E5%B0%84/202303201458713.png" alt="image-20230320145804008"></p>
+<h1 id="反射在反序列化漏洞中的应用"><a href="#反射在反序列化漏洞中的应用" class="headerlink" title="反射在反序列化漏洞中的应用"></a>反射在反序列化漏洞中的应用</h1><p>​		因为发射使java具有动态性，因此我们可以通过反射技术做到以下：</p>
+<p>​		1、修改已有对象的属性。</p>
+<p>​		2、动态生成对象。</p>
+<p>​		3、动态调用方法。</p>
+<p>​		4、操作内部类和私有方法。</p>
+
+	  <div class="article-footer-copyright">
+
+    本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a>
+</div>
+	</div>
+
+	
+	<span id="/2023/03/20/java%E5%8F%8D%E5%B0%84/" class="leancloud-visitors view" data-flag-title="java反射">
+		<em class="post-meta-item-text"> Page View </em> <i class="leancloud-visitors-count"></i>
+	</span>
+	
+	<div>
+  	<center>
+
+	<div class="pagination">
+
+    
+    
+    <a href="/2023/03/20/java序列化与反序列化/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2022/11/17/kerberos网络身份认证-PTT-ms14068/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	<!--
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+-->
+	
+		<section id="comments" class="comments">
+			<style>
+			.comments{margin:30px;padding:10px;background:rgb(0, 0, 0)}
+			@media screen and (max-width:800px){.comments{margin:auto;padding:10px;background:#000}}
+			</style>
+			<div id="vcomment" class="comment"></div>
+<script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+var valineConfig = {"enable":true,"appId":"T4cIyHys5R6e08AOwUNWgymj-gzGzoHsz","appKey":"J1TTypyuxpKKmz37Rd7oQ9tE","placeholder":"提交评论时留下邮箱收到回复后将自动通知","visitor":true,"avatar":"monsterid","requiredFields":["nick","mail"]}
+valineConfig.el='#vcomment';
+new Valine(valineConfig);
+    // new Valine({
+    //     el: '#vcomment',
+    //     appId: "",
+    //     appKey: "",
+    //     placeholder: "提交评论时留下邮箱收到回复后将自动通知",
+    //     avatar:"monsterid",
+    //     visitor: "true",
+    //     requiredFields: "nick,mail".split(','),
+    // });
+</script>
+
+		</section>
+	
+	</div> <!-- col-md-9/col-md-12 -->
+
+
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2023-03-20 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/JavaWeb/">JavaWeb<span>9</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/Java安全/">Java安全<span>9</span></a></li>
+    </ul>
+	</div>
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+		   <span class="toc-title">Contents</span>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%8F%8D%E5%B0%84%EF%BC%9F"><span class="toc-article-text">什么是反射？</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#%E4%B8%BE%E4%B8%80%E4%B8%AA%E4%BE%8B%E5%AD%90"><span class="toc-article-text">举一个例子</span></a></li></ol></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#%E5%8F%8D%E5%B0%84%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8%EF%BC%9F"><span class="toc-article-text">反射有什么用？</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#%E4%B8%80%E4%BA%9B%E5%8F%8D%E5%B0%84%E5%B8%B8%E7%94%A8%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-article-text">一些反射常用的方法</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#%E5%AE%9E%E4%BE%8B%E4%BF%AE%E6%94%B9%E4%B8%80%E4%B8%AA%E5%B7%B2%E6%9C%89%E7%B1%BB"><span class="toc-article-text">实例修改一个已有类</span></a></li></ol></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#%E5%8F%8D%E5%B0%84%E5%9C%A8%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="toc-article-text">反射在反序列化漏洞中的应用</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+		
+
+	</div>
+	
+		
+
+</div><!-- row -->
+
+<!--
+ -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  
+  &copy; 2023 Tptfb11's Blog
+  
+      powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.Theme <a href="https://github.com/Ares-X/hexo-theme-freemind.bithack" target="_blank">freemind.bithack</a>  
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>

