@@ -129,7 +129,8 @@
 		 </div> <!-- alert -->
 	  		
 
-	  <h1 id="什么是反射？"><a href="#什么是反射？" class="headerlink" title="什么是反射？"></a>什么是反射？</h1><p>​		反射我简单的理解为：“<strong>动态注册</strong>”，java支持反射功能。比如：一段代码在你不知道传入的参数值是什么的时候，也就无法知道它有什么用处：</p>
+	  <p>反射我简单的理解为：“<strong>动态注册</strong>”，java支持反射功能。</p>
+<h1 id="什么是反射？"><a href="#什么是反射？" class="headerlink" title="什么是反射？"></a>什么是反射？</h1><p>​		反射我简单的理解为：“<strong>动态注册</strong>”，java支持反射功能。比如：一段代码在你不知道传入的参数值是什么的时候，也就无法知道它有什么用处：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">execute</span><span class="params">(String className, String methodName)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">    <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(className);</span><br><span class="line">    clazz.getMethod(methodName).invoke(clazz.newInstance());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>​		这段代码中包含这几个关键的函数：</p>

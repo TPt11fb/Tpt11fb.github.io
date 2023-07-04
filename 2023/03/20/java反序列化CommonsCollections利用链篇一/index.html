@@ -129,7 +129,8 @@
 		 </div> <!-- alert -->
 	  		
 
-	  <h1 id="初试CommonsCollections"><a href="#初试CommonsCollections" class="headerlink" title="初试CommonsCollections"></a>初试CommonsCollections</h1><p>Commons Collections包为Java标准的Collections API提供了相当好的补充。在此基础上对其常用的数据结构操作进行了很好的封装、抽象和补充。让我们在开发应用程序的过程中，既保证了性能，同时也能大大简化代码。</p>
+	  <p> java反序列化CC链最为经典.</p>
+<h1 id="初试CommonsCollections"><a href="#初试CommonsCollections" class="headerlink" title="初试CommonsCollections"></a>初试CommonsCollections</h1><p>Commons Collections包为Java标准的Collections API提供了相当好的补充。在此基础上对其常用的数据结构操作进行了很好的封装、抽象和补充。让我们在开发应用程序的过程中，既保证了性能，同时也能大大简化代码。</p>
 <p>Commons Collections简单说就是一个集合类，它方便了对map等数据结构的操作。</p>
 <p>Commons Collections是java应用非常常用的一个依赖因此能够很好的作为漏洞利用点，Commons Collections链的多个不同在于间接调用的流程。</p>
 <h2 id="InvokerTransformer-transform隐藏后门？"><a href="#InvokerTransformer-transform隐藏后门？" class="headerlink" title="InvokerTransformer.transform隐藏后门？"></a>InvokerTransformer.transform隐藏后门？</h2><p>Commons Collections反序列化的漏洞利用点就在于Transformer的实现类InvokerTransformer类的transform方法：</p>
